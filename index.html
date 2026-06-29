@@ -2,11 +2,10 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>拜訪習慣系統｜管理員版</title>
 <style>
-* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; touch-action: manipulation; }
-html { touch-action: manipulation; -ms-touch-action: manipulation; }
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 :root {
   --bg:#0D0D0D; --bg2:#141414; --bg3:#1C1C1C;
   --gold:#C9A84C; --gold-light:#E2C06A; --gold-dim:rgba(201,168,76,0.13); --gold-border:rgba(201,168,76,0.25);
@@ -781,10 +780,13 @@ window.openModal = function(type, prefill) {
       <div class="field-group"><div class="field-label">備忘</div><textarea id="f_memo" rows="2" placeholder="為什麼想到他？"></textarea></div>
       <div class="modal-btns"><button class="btn-cancel" onclick="closeModal()">取消</button><button class="btn-save" onclick="saveBrain()">記下來</button></div>`;
   } else if (type==='visit') {
-    const opts = (window._state.clients||[]).map(c=>`<option value="${c.name}" ${c.name===prefill?'selected':''}>${c.name}</option>`).join('');
+    const clientList = window._state.clients||[];
+    const matchFound = prefill && clientList.some(c=>c.name===prefill);
+    const opts = clientList.map(c=>`<option value="${c.name}" ${c.name===prefill?'selected':''}>${c.name}</option>`).join('');
+    const showOther = prefill && !matchFound;
     html=`<div class="modal-title">拜訪記錄</div>
-      <div class="field-group"><div class="field-label">客戶</div><select id="f_client">${opts}<option value="__other__">其他</option></select></div>
-      <div class="field-group" id="otherGrp" style="display:none"><div class="field-label">姓名</div><input id="f_other" placeholder="客戶名字"></div>
+      <div class="field-group"><div class="field-label">客戶</div><select id="f_client">${opts}<option value="__other__" ${showOther?'selected':''}>其他</option></select></div>
+      <div class="field-group" id="otherGrp" style="display:${showOther?'block':'none'}"><div class="field-label">姓名</div><input id="f_other" placeholder="客戶名字" value="${showOther?prefill:''}"></div>
       <div class="field-group"><div class="field-label">日期</div><input id="f_date" type="date" value="${todayVal}"></div>
       <div class="field-group"><div class="field-label">聊了什麼</div><textarea id="f_talked" rows="2" placeholder="聊的話題..."></textarea></div>
       <div class="field-group"><div class="field-label">客戶的需求</div><textarea id="f_need" rows="2" placeholder="他最在意什麼？"></textarea></div>
@@ -938,20 +940,6 @@ window.switchTab = function(tab,btn) {
   if(tab==='admin') renderAdminPage();
   if(tab==='mindset') renderMindset();
 };
-
-// ── PREVENT PINCH ZOOM ──
-document.addEventListener('gesturestart', e => e.preventDefault());
-document.addEventListener('gesturechange', e => e.preventDefault());
-document.addEventListener('gestureend', e => e.preventDefault());
-let lastTouchEnd = 0;
-document.addEventListener('touchend', e => {
-  const now = Date.now();
-  if (now - lastTouchEnd <= 300) e.preventDefault();
-  lastTouchEnd = now;
-}, false);
-document.addEventListener('touchstart', e => {
-  if (e.touches.length > 1) e.preventDefault();
-}, { passive: false });
 </script>
 </body>
 </html>
