@@ -2,10 +2,11 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>拜訪習慣系統｜管理員版</title>
 <style>
-* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; touch-action: manipulation; }
+html { touch-action: manipulation; -ms-touch-action: manipulation; }
 :root {
   --bg:#0D0D0D; --bg2:#141414; --bg3:#1C1C1C;
   --gold:#C9A84C; --gold-light:#E2C06A; --gold-dim:rgba(201,168,76,0.13); --gold-border:rgba(201,168,76,0.25);
@@ -907,7 +908,12 @@ window.togglePlan = async function(id,done) {
   await updateItem('plans',id,{done});
   window._state.plans=await getItems('plans'); renderMindset();
 };
-window.quickVisit = function(name) { openModal('visit',name); };
+window.quickVisit = function(name) {
+  // Switch to visits tab first so the user sees context
+  const visitBtn = document.querySelector('.tab-btn[onclick*="visits"]');
+  switchTab('visits', visitBtn);
+  setTimeout(()=>openModal('visit',name), 150);
+};
 window.moveToClients = async function(id,name) {
   await addItem('clients',{name,status:'new'});
   await deleteItem('brain',id);
@@ -932,6 +938,20 @@ window.switchTab = function(tab,btn) {
   if(tab==='admin') renderAdminPage();
   if(tab==='mindset') renderMindset();
 };
+
+// ── PREVENT PINCH ZOOM ──
+document.addEventListener('gesturestart', e => e.preventDefault());
+document.addEventListener('gesturechange', e => e.preventDefault());
+document.addEventListener('gestureend', e => e.preventDefault());
+let lastTouchEnd = 0;
+document.addEventListener('touchend', e => {
+  const now = Date.now();
+  if (now - lastTouchEnd <= 300) e.preventDefault();
+  lastTouchEnd = now;
+}, false);
+document.addEventListener('touchstart', e => {
+  if (e.touches.length > 1) e.preventDefault();
+}, { passive: false });
 </script>
 </body>
 </html>
